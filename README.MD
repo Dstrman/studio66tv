@@ -53,7 +53,7 @@ curl "https://app.firecall.tv/apifs/creditcardivr_json.php?callback=jQuery181037
 
 ---
 
-*** TO DO
+### TO DO
 1. Adjust json processing to be more script based - currently everything is hard coded, and overly complex
 2. Determine a way to obtain website session_key (31 characters) to make it easier to get all variables needed for logon status.
 
