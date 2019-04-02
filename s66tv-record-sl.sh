@@ -279,7 +279,7 @@ do
 					opt_suffix="channelID=${optChannelID}&cid=57&customerid=57&token=${optToken}"
 				else
 					# assume logged in state, and ini file contains all 3 required parameters
-					opt_suffix="channelID=${optChannelid}&cid=57&customerid=57&token=${optToken}&ccivrid=${optCcivrid}&username=${opt_username}&session_key=${optSessionKey}"
+					opt_suffix="channelID=${optChannelID}&cid=57&customerid=57&token=${optToken}&ccivrid=${optCcivrid}&username=${opt_username}&session_key=${optSessionKey}"
 				fi
 			fi
 			opt_url="https://${stream_server[${server_num}]}/${optApplication}/smil:${optStreamName}.smil/playlist.m3u8"
