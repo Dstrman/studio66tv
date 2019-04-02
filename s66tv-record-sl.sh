@@ -81,6 +81,9 @@ function stream_json()
 						optStreamName=$(echo ${isLive} | ${cmd_jq} -r '.streamName')
 						rm "${jsonTMP}" 2>/dev/null
 						return
+					else
+						optToken="invalid"
+						continue
 					fi
 				else
 					optToken="invalid"
@@ -102,6 +105,9 @@ function stream_json()
 						optStreamName=$(echo ${isLive} | ${cmd_jq} -r '.streamName')
 						rm "${jsonTMP}" 2>/dev/null
 						return
+					else
+						optToken="invalid"
+						continue
 					fi
 				else
 					optToken="invalid"
