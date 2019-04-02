@@ -51,5 +51,13 @@ You will find all 3 values fairly easy. If you know your `username` and your `se
 curl "https://app.firecall.tv/apifs/creditcardivr_json.php?callback=jQuery181037400$(date +%s%3N)_$(date +%s%3N)&bustCache=0.$(tr -dc '1-9' </dev/urandom | head -c 16)&version=2&friendID=9826611919&customerid=57&act=restore_session&countrycode=GB&voicall_serviceid=3089&username=changeme&session_key=1234567890123456789123456789012&_=$(date +%s%3N)" --verbose
 ```
 
+---
 
+*** TO DO
+1. Adjust json processing to be more script based - currently everything is hard coded, and overly complex
+2. Determine a way to obtain website session_key (31 characters) to make it easier to get all variables needed for logon status.
+
+  To include automatic refresh of values in ini file.
+
+3. Identify if channelID of 2727 for Daytime Xtra will be used, and if so what stream number it would map to
 
