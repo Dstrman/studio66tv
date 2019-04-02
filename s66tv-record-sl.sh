@@ -1,5 +1,5 @@
 #!/bin/bash
-# parameters - all 3 must be defined
+# parameters - all must be defined
 # 1 = channel - as number - 1 to 4 (normally)
 # 2 = show type - nightshow or dayshow
 
