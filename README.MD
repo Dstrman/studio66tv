@@ -45,7 +45,8 @@ Also if you wish to record without stream timeout, i.e. logged on, you will need
 * *opt_session_key* is your unique key, which is set and lasts for 365 days (I believe). It should be 31 characters long.
 
 Getting the values of these 2 items is not difficult, by making use of view-source in your browser and the URLs used from the website, when you log in. 
-So long as you enter these correctly, the script will automatically obtain your `ccivrid` and `session-key` to support recording as if logged on (i.e. not stream timeout).
+So long as you enter these correctly, the script will automatically obtain your `ccivrid` and `session-key` to support recording as if logged on (i.e. no stream timeout).
+It will update the `ini` file with these values, and not try and get them for subseqeunt runs.
 
 ---
 
