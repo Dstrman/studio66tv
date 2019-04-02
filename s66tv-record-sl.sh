@@ -94,15 +94,17 @@ function json_stream()
 			## assumed nightshow
 			for chkID in 345 341 2639 2701 963 6562
 			do
+				msg_debug "Checking ${chkID}"
 				isLive=$(${cmd_jq} -r --arg CHID "${chkID}" '.payload.channelData[$CHID]| select(.live==true)' "${jsonTMP}")
 				if [[ ! "${isLive}" == "" ]] ; then
-					chkOriginalName=$(echo ${isLive} | ${cmd_jq} -r '.originalname')
-					optOriginalName=${chkOriginalName: -1}
-					if [[ ${optOriginalName} -eq ${json_channel} ]] ; then
+					chkStreamName=$(echo ${isLive} | ${cmd_jq} -r '.streamName')
+					msg_debug "Found ${chkStreamName}"
+					if [[ "${chkStreamName}" == *"${json_channel}"* ]] ; then
+						msg_debug "They match"
 						optChannelID=$(echo ${isLive} | ${cmd_jq} -r '.id')
 						optToken=$(echo ${isLive} | ${cmd_jq} -r '.token')
 						optApplication=$(echo ${isLive} | ${cmd_jq} -r '.application')
-						optStreamName=$(echo ${isLive} | ${cmd_jq} -r '.streamName')
+						optStreamName=${chkStreamName}
 						rm "${jsonTMP}" 2>/dev/null
 						return
 					else
