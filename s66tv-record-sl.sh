@@ -64,234 +64,52 @@ function stream_json()
     if [[ ! -s "${json_tmp}" ]] ; then
 		msg_debug "Failed to download ${json_url}"
 		rm "${json_tmp}" 2>/dev/null
-		opt_token="null"
+		optToken="invalid"
 		return
     else
-		case ${json_channel} in
-			1)
-				streamName=$(cat "${json_tmp}" | jq -r '.payload.channelData."345".streamName')
-				if [[ "${streamName}" == "" ]] || [[ "${streamName,,}" == "null" ]] ; then
-					opt_token="null"
-					rm "${json_tmp}" 2>/dev/null
-					return
-				fi
-				msg_debug "Checking ${json_channel} against channelid 345. Got ${streamName}"
-				if [[ "${streamName}" == *"channel1"* ]] ; then
-					get_token=$(cat "${json_tmp}" | jq -r '.payload.channelData."345".token')
-					if [[ "${get_token}" == "" ]] ; then
-						msg_debug "Failed to get token for ${json_channel}"
-						opt_token="null"
-						rm "${json_tmp}" 2>/dev/null
-						return
-					else
-						opt_token=${get_token}
-						opt_application=$(cat "${json_tmp}" | jq -r '.payload.channelData."345".application')
-						opt_channelid=345
-						opt_streamName=${streamName}
-						rm "${json_tmp}" 2>/dev/null
+		if [[ "${showType,,}" == "dayshow" ]] ; then
+			for chkID in 345 341 343 347 2727
+			do
+				isLive=$(${cmd_jq} -r --arg CHID "${chkID}" '.payload.channelData[$CHID]| select(.live==true)' "${json_tmp}")
+				if [[ ! "${isLive}" == "" ]] ; then
+					chkOriginalName=$(echo ${isLive} | ${cmd_jq} -r '.originalname')
+					optOriginalName=${chkOriginalName: -1}
+					if [[ ${optOriginalName} -eq ${json_channel} ]] ; then
+						optChannelID=$(echo ${isLive} | ${cmd_jq} -r '.id')
+						optToken=$(echo ${isLive} | ${cmd_jq} -r '.token')
+						optApplication=$(echo ${isLive} | ${cmd_jq} -r '.application')
+						optStreamName=$(echo ${isLive} | ${cmd_jq} -r '.streamName')
+						rm "${jsonTMP}" 2>/dev/null
 						return
 					fi
 				else
-					msg_debug "streamName isn't correct for channel ${json_channel}"
-					opt_token="null"
-					rm "${json_tmp}" 2>/dev/null
-					return
+					optToken="invalid"
+					continue
 				fi
-				;;
-	    2)
-			streamName=$(cat "${json_tmp}" | jq -r '.payload.channelData."341".streamName')
-				if [[ "${streamName}" == "" ]] || [[ "${streamName,,}" == "null" ]] ; then
-					opt_token="null"
-					rm "${json_tmp}" 2>/dev/null
-					return
-				fi
-				msg_debug "Checking ${json_channel} against channelid 341. Got ${streamName}"
-				if [[ "${streamName}" == *"channel2"* ]] ; then
-					get_token=$(cat "${json_tmp}" | jq -r '.payload.channelData."341".token')
-					if [[ "${get_token}" == "" ]] ; then
-						opt_token="null"
-						rm "${json_tmp}" 2>/dev/null
-						return
-					else
-						opt_token=${get_token}
-						opt_application=$(cat "${json_tmp}" | jq -r '.payload.channelData."341".application')
-						opt_channelid=341
-						opt_streamName=${streamName}
-						rm "${json_tmp}" 2>/dev/null
+			done
+		else
+			## assumed nightshow
+			for chkID in 345 341 2639 2701 963 6562
+			do
+				isLive=$(${cmd_jq} -r --arg CHID "${chkID}" '.payload.channelData[$CHID]| select(.live==true)' "${json_tmp}")
+				if [[ ! "${isLive}" == "" ]] ; then
+					chkOriginalName=$(echo ${isLive} | ${cmd_jq} -r '.originalname')
+					optOriginalName=${chkOriginalName: -1}
+					if [[ ${optOriginalName} -eq ${json_channel} ]] ; then
+						optChannelID=$(echo ${isLive} | ${cmd_jq} -r '.id')
+						optToken=$(echo ${isLive} | ${cmd_jq} -r '.token')
+						optApplication=$(echo ${isLive} | ${cmd_jq} -r '.application')
+						optStreamName=$(echo ${isLive} | ${cmd_jq} -r '.streamName')
+						rm "${jsonTMP}" 2>/dev/null
 						return
 					fi
 				else
-					msg_debug "streamName isn't correct for channel ${json_channel}"
-					opt_token="null"
-					rm "${json_tmp}" 2>/dev/null
-					return
+					optToken="invalid"
+					continue
 				fi
-				;;
-	    3)
-			if [[ "${showType}" == "DayShow" ]] ; then
-				streamName=$(cat "${json_tmp}" | jq -r '.payload.channelData."343".streamName')
-				if [[ "${streamName}" == "" ]] || [[ "${streamName,,}" == "null" ]] ; then
-					opt_token="null"
-					rm "${json_tmp}" 2>/dev/null
-					return
-				fi
-				msg_debug "Checking ${json_channel} against channelid 343. Got ${streamName}"
-				if [[ "${streamName}" == *"channel3"* ]] ; then
-					get_token=$(cat "${json_tmp}" | jq -r '.payload.channelData."343".token')
-					if [[ "${get_token}" == "" ]] ; then
-						opt_token="null"
-						rm "${json_tmp}" 2>/dev/null
-						return
-					else
-						opt_token=${get_token}
-						opt_application=$(cat "${json_tmp}" | jq -r '.payload.channelData."343".application')
-						opt_channelid=343
-						opt_streamName=${streamName}
-						rm "${json_tmp}" 2>/dev/null
-						return
-					fi
-				fi
-			else
-				streamName=$(cat "${json_tmp}" | jq -r '.payload.channelData."2639".streamName')
-				if [[ "${streamName}" == "" ]] || [[ "${streamName,,}" == "null" ]] ; then
-					streamName=$(cat "${json_tmp}" | jq -r '.payload.channelData."2701".streamName')
-					if [[ "${streamName}" == "" ]] || [[ "${streamName,,}" == "null" ]] ; then
-						opt_token="null"
-						rm "${json_tmp}" 2>/dev/null
-						return
-					fi
-					msg_debug "Checking ${json_channel} against channelid 2701. Got ${streamName}"
-					if [[ "${streamName}" == *"channel3"* ]] ; then
-						get_token=$(cat "${json_tmp}" | jq -r '.payload.channelData."2701".token')
-						if [[ "${get_token}" == "" ]] ; then
-							opt_token="null"
-							rm "${json_tmp}" 2>/dev/null
-							return
-						else
-							opt_token=${get_token}
-							opt_application=$(cat "${json_tmp}" | jq -r '.payload.channelData."2701".application')
-							opt_channelid=2701
-							opt_streamName=${streamName}
-							rm "${json_tmp}" 2>/dev/null
-							return
-						fi
-					else
-						msg_debug "streamName isn't correct for channel ${json_channel}"
-						opt_token="null"
-						rm "${json_tmp}" 2>/dev/null
-						return
-					fi
-				else
-					msg_debug "Checking ${json_channel} against channelid 2639. Got ${streamName}"
-					if [[ "${streamName}" == *"channel3"* ]] ; then
-						get_token=$(cat "${json_tmp}" | jq -r '.payload.channelData."2639".token')
-						if [[ "${get_token}" == "" ]] ; then
-							opt_token="null"
-							rm "${json_tmp}" 2>/dev/null
-							return
-						else
-							opt_token=${get_token}
-							opt_application=$(cat "${json_tmp}" | jq -r '.payload.channelData."2639".application')
-							opt_channelid=2639
-							opt_streamName=${streamName}
-							rm "${json_tmp}" 2>/dev/null
-							return
-						fi
-					else
-						msg_debug "streamName isn't correct for channel ${json_channel}"
-						opt_token="null"
-						rm "${json_tmp}" 2>/dev/null
-						return
-					fi
-				fi
-			fi
-			;;
-	    4)
-			if [[ "${showType}" == "DayShow" ]] ; then
-				streamName=$(cat "${json_tmp}" | jq -r '.payload.channelData."347".streamName')
-				if [[ "${streamName}" == "" ]] || [[ "${streamName,,}" == "null" ]] ; then
-					opt_token="null"
-					rm "${json_tmp}" 2>/dev/null
-					return
-				fi
-				msg_debug "Checking ${json_channel} against channelid 347. Got ${streamName}"
-				if [[ "${streamName}" == *"channel4"* ]] ; then
-					get_token=$(cat "${json_tmp}" | jq -r '.payload.channelData."347".token')
-					if [[ "${get_token}" == "" ]] ; then
-						opt_token="null"
-						rm "${json_tmp}" 2>/dev/null
-						return
-					else
-						opt_token=${get_token}
-						opt_application=$(cat "${json_tmp}" | jq -r '.payload.channelData."347".application')
-						opt_channelid=347
-						opt_streamName=${streamName}
-						rm "${json_tmp}" 2>/dev/null
-						return
-					fi
-				else
-					msg_debug "streamName isn't correct for channel ${json_channel}"
-					opt_token="null"
-					rm "${json_tmp}" 2>/dev/null
-					return
-				fi
-			else
-				streamName=$(cat "${json_tmp}" | jq -r '.payload.channelData."963".streamName')
-				if [[ "${streamName}" == "" ]] || [[ "${streamName,,}" == "null" ]] ; then
-					streamName=$(cat "${json_tmp}" | jq -r '.payload.channelData."6562".streamName')
-					if [[ "${streamName}" == "" ]] || [[ "${streamName,,}" == "null" ]] ; then
-						opt_token="null"
-						rm "${json_tmp}" 2>/dev/null
-						return
-					fi
-					msg_debug "Checking ${json_channel} against channelid 6562. Got ${streamName}"
-					if [[ "${streamName}" == *"channel4"* ]] ; then
-						get_token=$(cat "${json_tmp}" | jq -r '.payload.channelData."6562".token')
-						if [[ "${get_token}" == "" ]] ; then
-							opt_token="null"
-							rm "${json_tmp}" 2>/dev/null
-							return
-						else
-							opt_token=${get_token}
-							opt_application=$(cat "${json_tmp}" | jq -r '.payload.channelData."6562".application')
-							opt_channelid=6562
-							opt_streamName=${streamName}
-							rm "${json_tmp}" 2>/dev/null
-							return
-						fi
-					else
-						msg_debug "streamName isn't correct for channel ${json_channel}"
-						opt_token="null"
-						rm "${json_tmp}" 2>/dev/null
-						return
-					fi
-				else
-					msg_debug "Checking ${json_channel} against channelid 963. Got ${streamName}"
-					if [[ "${streamName}" == *"channel4"* ]] ; then
-						get_token=$(cat "${json_tmp}" | jq -r '.payload.channelData."963".token')
-						if [[ "${get_token}" == "" ]] ; then
-							opt_token="null"
-							rm "${json_tmp}" 2>/dev/null
-							return
-						else
-							opt_token=${get_token}
-							opt_application=$(cat "${json_tmp}" | jq -r '.payload.channelData."963".application')
-							opt_channelid=963
-							opt_streamName=${streamName}
-							rm "${json_tmp}" 2>/dev/null
-							return
-						fi
-					else
-						msg_debug "streamName isn't correct for channel ${json_channel}"
-						opt_token="null"
-						rm "${json_tmp}" 2>/dev/null
-						return
-					fi
-				fi
-			fi
-			;;
-		esac
-    fi
+			done
+		fi
+	fi
     rm "${json_tmp}" 2>/dev/null
 }
 # functions - end
@@ -408,24 +226,25 @@ do
 				continue
 			fi
 			stream_json ${channel}
-			if [[ ${debug} -eq 1 ]] ; then msg_debug "Returned ${opt_token} ${opt_application} ${opt_mbr} ${opt_streamName}." ; fi
-			if [[ "${opt_token}" == "" ]] || [[ "${opt_token,,}" == "null" ]] ; then
+			if [[ ${debug} -eq 1 ]] ; then msg_debug "Returned ${optChannelID} ${optToken} ${optApplication} ${optStreamName}." ; fi
+			if [[ "${optToken}" == "" ]] || [[ "${optToken,,}" == "null" ]] || [[ "${optToken}" == "invalid" ]] ; then
 				# stream is not live - pause and reloop
 				server_num=0
 				recordingokay=0
-				if [[ ${debug} -eq 1 ]] ; then msg_debug "token was ${opt_token}. Stream ${channel} not live." ; fi
+				if [[ ${debug} -eq 1 ]] ; then msg_debug "token was ${optToken}. Stream ${channel} not live." ; fi
 				sleep ${timer_long}s 2>/dev/null
 				break 2
 			fi
-			opt_url="https://${stream_server[${server_num}]}/${opt_application}/smil:${opt_streamName}.smil/playlist.m3u8"
+			opt_url="https://${stream_server[${server_num}]}/${optApplication}/smil:${optStreamName}.smil/playlist.m3u8"
 			if [[ "${opt_session_key}" == "" ]] || [[ "${opt_session_key}" == "changeme" ]] ; then
 				# assume not logged in, so timeout will occur based on server-side settings
-				opt_suffix="channelID=${opt_channelid}&cid=57&customerid=57&token=${opt_token}"
+				opt_suffix="channelID=${optChannelID}&cid=57&customerid=57&token=${optToken}"
 			else
 				# assume logged in state, and ini file contains all 3 required parameters
-				opt_suffix="channelID=${opt_channelid}&cid=57&customerid=57&token=${opt_token}&ccivrid=${opt_ccivrid}&username=${opt_username}&session_key=${opt_session_key}"
+				opt_suffix="channelID=${optChannelid}&cid=57&customerid=57&token=${optToken}&ccivrid=${opt_ccivrid}&username=${opt_username}&session_key=${opt_session_key}"
 			fi
-			# opt_suffix="token=${opt_token}"
+			msg_normal "Using ${opt_type}://\"${opt_url}?${opt_suffix}\" ${opt_quality} ${opt_common} --output \"${filesave}\" ${opt_options} --http-header \"${opt_header1}\" --http-header \"${opt_header2}\""
+			read -p "press any key" key
 			${cmd_record} ${opt_type}://"${opt_url}?${opt_suffix}" ${opt_quality} ${opt_common} --output "${filesave}" ${opt_options} --http-header "${opt_header1}" --http-header "${opt_header2}" &>/dev/null &
 			run_pid=$!
 			sleep ${timer_medium}s 2>/dev/null
