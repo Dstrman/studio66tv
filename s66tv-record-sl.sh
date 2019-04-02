@@ -160,8 +160,6 @@ fi
 # init core variables
 site_name=s66tv
 base_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-temp_dir="${base_dir}/${site_name}_temp"
-if [[ ! -d "${temp_dir%/#}" ]] ; then mkdir -p "${temp_dir%/#}" ; fi
 ini_file="${base_dir}/${site_name}.ini"
 run_user=$(whoami)
 source "${ini_file}"
