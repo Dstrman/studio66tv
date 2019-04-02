@@ -5,6 +5,7 @@
 ---
 
 Created for personal use only. No implied guarantee this works. Use at your own risk.
+Created and tested on [Debian Buster](https://wiki.debian.org/DebianBuster), but should work on any reasonably current Linux OS, so long as BASH is v4 or higher and external programs are installed.
 
 ---
 
