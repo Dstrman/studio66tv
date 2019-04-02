@@ -122,6 +122,10 @@ function json_user()
 {
 	local jsonUsername="$1"
 	local jsonSessionKey="$2"
+	if [[ ! "${optCcivrid}" == "" ]] && [[ ! "${optSessionKey}" == "" ]] ; then
+		sessionType="logon"
+		return
+	fi
 	if [[ "${jsonUsername}" == "" ]] || [[ "${jsonSessionKey}" == "" ]] || [[ "${jsonUsername}" == "changeme" ]] || [[ "${jsonSessionKey}" == "changeme" ]] ; then
 		sessionType="logoff"
 		return
@@ -142,6 +146,12 @@ function json_user()
 			userDetail=${userDetail//);/}
 			optCcivrid=$(echo ${userDetail} | ${cmd_jq} -r '.userid')
 			optSessionKey=$(echo ${userDetail} | ${cmd_jq} -r '.session_key')
+			if [[ ! $(cat "${ini_file}" | grep -i ${optSessionKey}) ]] ; then
+				echo "optSessionKey=${optSessionKey}" >> "${ini_file}"
+			fi
+			if [[ ! $(cat "${ini_file}" | grep -i ${optCcivrid}) ]] ; then
+				echo "optCcivrid=${optCcivrid}" >> "${ini_file}"
+			fi
 			rm "${userTMP}" 2>/dev/null
 			sessionType="logon"
 			return
