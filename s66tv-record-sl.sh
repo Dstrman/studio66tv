@@ -56,21 +56,21 @@ function tidy_files()
     fi
 }
 
-function stream_json()
+function json_stream()
 {
     local json_channel=$1
-    json_tmp=$(mktemp)
-    ${cmd_curl} "${json_url}" --silent --connect-timeout 5 --retry 2 --insecure --fail --noproxy '*' --output "${json_tmp}" 2>/dev/null
-    if [[ ! -s "${json_tmp}" ]] ; then
+    jsonTMP=$(mktemp)
+    ${cmd_curl} "${json_url}" --silent --connect-timeout 5 --retry 2 --insecure --fail --noproxy '*' --output "${jsonTMP}" 2>/dev/null
+    if [[ ! -s "${jsonTMP}" ]] ; then
 		msg_debug "Failed to download ${json_url}"
-		rm "${json_tmp}" 2>/dev/null
+		rm "${jsonTMP}" 2>/dev/null
 		optToken="invalid"
 		return
     else
 		if [[ "${showType,,}" == "dayshow" ]] ; then
 			for chkID in 345 341 343 347 2727
 			do
-				isLive=$(${cmd_jq} -r --arg CHID "${chkID}" '.payload.channelData[$CHID]| select(.live==true)' "${json_tmp}")
+				isLive=$(${cmd_jq} -r --arg CHID "${chkID}" '.payload.channelData[$CHID]| select(.live==true)' "${jsonTMP}")
 				if [[ ! "${isLive}" == "" ]] ; then
 					chkOriginalName=$(echo ${isLive} | ${cmd_jq} -r '.originalname')
 					optOriginalName=${chkOriginalName: -1}
@@ -94,7 +94,7 @@ function stream_json()
 			## assumed nightshow
 			for chkID in 345 341 2639 2701 963 6562
 			do
-				isLive=$(${cmd_jq} -r --arg CHID "${chkID}" '.payload.channelData[$CHID]| select(.live==true)' "${json_tmp}")
+				isLive=$(${cmd_jq} -r --arg CHID "${chkID}" '.payload.channelData[$CHID]| select(.live==true)' "${jsonTMP}")
 				if [[ ! "${isLive}" == "" ]] ; then
 					chkOriginalName=$(echo ${isLive} | ${cmd_jq} -r '.originalname')
 					optOriginalName=${chkOriginalName: -1}
@@ -116,7 +116,38 @@ function stream_json()
 			done
 		fi
 	fi
-    rm "${json_tmp}" 2>/dev/null
+    rm "${jsonTMP}" 2>/dev/null
+}
+
+function json_user()
+{
+	local jsonUsername="$1"
+	local jsonSessionKey="$2"
+	if [[ "${jsonUsername}" == "" ]] || [[ "${jsonSessionKey}" == "" ]] || [[ "${jsonUsername}" == "changeme" ]] || [[ "${jsonSessionKey}" == "changeme" ]] ; then
+		sessionType="logoff"
+		return
+	else
+		userTMP=$(mktemp)
+		jQuery="jQuery181037400$(date +%s%3N)_$(date +%s%3N)"
+		userURL="https://app.firecall.tv/apifs/creditcardivr_json.php?callback=${jQuery}&bustCache=0.$(tr -dc '1-9' </dev/urandom | head -c 16)&version=2&friendID=9826611919&customerid=57&act=restore_session&countrycode=GB&voicall_serviceid=3089&username=${jsonUsername}&session_key=${jsonSessionKey}&_=$(date +%s%3N)"
+		${cmd_curl} "${userURL}" --silent --connect-timeout 5 --retry 2 --insecure --fail --noproxy '*' --output "${userTMP}" 2>/dev/null
+		if [[ ! -s "${userTMP}" ]] ; then
+			msg_debug "Failed to download ${userURL}"
+			rm "${userTMP}" 2>/dev/null
+			sessionType="logoff"
+			return
+		else
+			# strip out jquery from json result
+			userDetail=$(cat "${userTMP}")
+			userDetail=${userDetail//${jQuery}(/}
+			userDetail=${userDetail//);/}
+			optCcivrid=$(echo ${userDetail} | ${cmd_jq} -r '.userid')
+			optSessionKey=$(echo ${userDetail} | ${cmd_jq} -r '.session_key')
+			rm "${userTMP}" 2>/dev/null
+			sessionType="logon"
+			return
+		fi
+	fi
 }
 # functions - end
 
@@ -229,7 +260,7 @@ do
 				let part++
 				continue
 			fi
-			stream_json ${channel}
+			json_stream ${channel}
 			if [[ ${debug} -eq 1 ]] ; then msg_debug "Returned ${optChannelID} ${optToken} ${optApplication} ${optStreamName}." ; fi
 			if [[ "${optToken}" == "" ]] || [[ "${optToken,,}" == "null" ]] || [[ "${optToken}" == "invalid" ]] ; then
 				# stream is not live - pause and reloop
@@ -239,14 +270,19 @@ do
 				sleep ${timer_long}s 2>/dev/null
 				break 2
 			fi
-			opt_url="https://${stream_server[${server_num}]}/${optApplication}/smil:${optStreamName}.smil/playlist.m3u8"
 			if [[ "${opt_session_key}" == "" ]] || [[ "${opt_session_key}" == "changeme" ]] ; then
 				# assume not logged in, so timeout will occur based on server-side settings
 				opt_suffix="channelID=${optChannelID}&cid=57&customerid=57&token=${optToken}"
 			else
-				# assume logged in state, and ini file contains all 3 required parameters
-				opt_suffix="channelID=${optChannelid}&cid=57&customerid=57&token=${optToken}&ccivrid=${opt_ccivrid}&username=${opt_username}&session_key=${opt_session_key}"
+				json_user "${opt_username}" "${opt_session_key}"
+				if [[ "${optSessionKey}" == "" ]] || [[ "${sessionType}" == "logoff" ]] ; then
+					opt_suffix="channelID=${optChannelID}&cid=57&customerid=57&token=${optToken}"
+				else
+					# assume logged in state, and ini file contains all 3 required parameters
+					opt_suffix="channelID=${optChannelid}&cid=57&customerid=57&token=${optToken}&ccivrid=${optCcivrid}&username=${opt_username}&session_key=${optSessionKey}"
+				fi
 			fi
+			opt_url="https://${stream_server[${server_num}]}/${optApplication}/smil:${optStreamName}.smil/playlist.m3u8"
 			msg_normal "Using ${opt_type}://\"${opt_url}?${opt_suffix}\" ${opt_quality} ${opt_common} --output \"${filesave}\" ${opt_options} --http-header \"${opt_header1}\" --http-header \"${opt_header2}\""
 			read -p "press any key" key
 			${cmd_record} ${opt_type}://"${opt_url}?${opt_suffix}" ${opt_quality} ${opt_common} --output "${filesave}" ${opt_options} --http-header "${opt_header1}" --http-header "${opt_header2}" &>/dev/null &
