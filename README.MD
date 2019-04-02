@@ -40,24 +40,16 @@ Uses external functions of
 ---
 
 `ini` file needs to be adjusted to your own preferences for some variables.
-Also if you wish to record without stream timeout, i.e. logged on, you will need to adjust 3 lines in `ini` file.
-* *opt_ccivrid* is a 6 or 7 digit number of your account. Obtain from view-source of your profile page.
+Also if you wish to record without stream timeout, i.e. logged on, you will need to adjust 2 lines in `ini` file.
 * *opt_username* is login name of your account. i.e. what you use as part of login page on main website.
-* *opt_session_key* is your unique key, which is set and lasts for 365 days (I believe).
+* *opt_session_key* is your unique key, which is set and lasts for 365 days (I believe). It should be 31 characters long.
 
-Getting the values of these 3 items is not difficult, by making use of view-source in your browser and the URLs used from the website, when you log in. 
-You will find all 3 values fairly easy. If you know your `username` and your `session_key` as logged in (not your session_key for streams), you can obtain a quick data dump of your account by issuing the command below (uses curl, but please make sure you change the values of username and session_key)
-```
-curl "https://app.firecall.tv/apifs/creditcardivr_json.php?callback=jQuery181037400$(date +%s%3N)_$(date +%s%3N)&bustCache=0.$(tr -dc '1-9' </dev/urandom | head -c 16)&version=2&friendID=9826611919&customerid=57&act=restore_session&countrycode=GB&voicall_serviceid=3089&username=changeme&session_key=1234567890123456789123456789012&_=$(date +%s%3N)" --verbose
-```
+Getting the values of these 2 items is not difficult, by making use of view-source in your browser and the URLs used from the website, when you log in. 
+So long as you enter these correctly, the script will automatically obtain your `ccivrid` and `session-key` to support recording as if logged on (i.e. not stream timeout).
 
 ---
 
 ### TO DO
 1. ~~Adjust json processing to be more script based - currently everything is hard coded, and overly complex~~ (Done in v2)
-2. Determine a way to obtain website session_key (31 characters) to make it easier to get all variables needed for logon status.
-
-  To include automatic refresh of values in ini file.
-
-3. Identify if channelID of 2727 for Daytime Xtra will be used, and if so what stream number it would map to
+2. Identify if channelID of 2727 for Daytime Xtra will be used, and if so what stream number it would map to.
 
