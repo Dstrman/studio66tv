@@ -282,8 +282,8 @@ do
 				fi
 			fi
 			opt_url="https://${stream_server[${server_num}]}/${optApplication}/smil:${optStreamName}.smil/playlist.m3u8"
-			msg_normal "Using ${opt_type}://\"${opt_url}?${opt_suffix}\" ${opt_quality} ${opt_common} --output \"${filesave}\" ${opt_options} --http-header \"${opt_header1}\" --http-header \"${opt_header2}\""
-			read -p "press any key" key
+			#msg_normal "Using ${opt_type}://\"${opt_url}?${opt_suffix}\" ${opt_quality} ${opt_common} --output \"${filesave}\" ${opt_options} --http-header \"${opt_header1}\" --http-header \"${opt_header2}\""
+			#read -p "press any key" key
 			${cmd_record} ${opt_type}://"${opt_url}?${opt_suffix}" ${opt_quality} ${opt_common} --output "${filesave}" ${opt_options} --http-header "${opt_header1}" --http-header "${opt_header2}" &>/dev/null &
 			run_pid=$!
 			sleep ${timer_medium}s 2>/dev/null
