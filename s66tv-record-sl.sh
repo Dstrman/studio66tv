@@ -266,7 +266,10 @@ do
 		do
 			filesave="${opt_od}${opt_channel}-${showType}-${showDate}-part$(printf "%02d" ${part}).${fs_type}"
 			if [[ -f "${filesave}" ]] ; then
-				let part++
+				currentFiles=$(ls -Frt "${opt_od}" | tail -n 1)
+				justFileName=$(basename ${currentFiles} .ts)
+				currentPart=${justFileName: -1}
+				part=$(( currentPart + 1 ))
 				continue
 			fi
 			json_stream ${channel}
@@ -292,8 +295,6 @@ do
 				fi
 			fi
 			opt_url="https://${stream_server[${server_num}]}/${optApplication}/smil:${optStreamName}.smil/${streamType}"
-			#msg_normal "Using ${opt_type}://\"${opt_url}?${opt_suffix}\" ${opt_quality} ${opt_common} --output \"${filesave}\" ${opt_options} --http-header \"${opt_header1}\" --http-header \"${opt_header2}\""
-			#read -p "press any key" key
 			${cmd_record} "${opt_url}?${opt_suffix}" ${opt_quality} ${opt_common} --output "${filesave}" ${opt_options} --http-header "${opt_header1}" --http-header "${opt_header2}" &>/dev/null &
 			run_pid=$!
 			sleep ${timer_medium}s 2>/dev/null
